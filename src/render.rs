@@ -1,6 +1,6 @@
 use crate::{
     buffer::{Buffers, ColorVertex, TextureVertex, Vertex},
-    camera::Camera,
+    camera::{Camera, Projection},
     texture::Texture,
 };
 
@@ -10,8 +10,6 @@ pub struct RenderPass {
     pipeline: wgpu::RenderPipeline,
     buffers: Buffers,
     texture_bind_group: wgpu::BindGroup,
-    camera: Camera,
-    camera_bind_group: wgpu::BindGroup,
 }
 
 impl RenderPass {
@@ -54,21 +52,6 @@ impl RenderPass {
         .expect("Failed to load crate texture");
         let texture_bind_group =
             texture.create_bind_group(device, &texture_bind_group_layout, Some("Cool texture"));
-
-        let camera_bind_group_layout = Camera::create_bind_group_layout(device);
-
-        let camera = Camera::new(config.width as f32 / config.height as f32);
-        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Camera buffer"),
-            contents: bytemuck::bytes_of(&camera.matrix()),
-            usage: wgpu::BufferUsages::UNIFORM,
-        });
-        let camera_bind_group = camera.create_bind_group(
-            device,
-            &camera_bind_group_layout,
-            &camera_buffer,
-            Some("Camera bind group"),
-        );
 
         let shader_module =
             device.create_shader_module(wgpu::include_wgsl!("shaders/texture_shader.wgsl"));
@@ -120,8 +103,6 @@ impl RenderPass {
             pipeline,
             buffers,
             texture_bind_group,
-            camera,
-            camera_bind_group,
         }
     }
 

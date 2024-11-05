@@ -6,11 +6,13 @@ mod texture;
 
 use state::*;
 
+use std::time::{Duration, Instant};
+
 use winit::{
     application::ApplicationHandler,
     dpi::PhysicalSize,
     error::EventLoopError,
-    event::{KeyEvent, WindowEvent},
+    event::{ElementState, KeyEvent, WindowEvent},
     event_loop::{ActiveEventLoop, ControlFlow::Poll, EventLoop},
     keyboard::{PhysicalKey, KeyCode},
     window::{Window, WindowId},
@@ -41,6 +43,7 @@ impl Default for Config {
 struct App {
     state: Option<State>,
     config: Config,
+    start_instant: Instant,
 }
 
 impl App {
@@ -48,7 +51,12 @@ impl App {
         Self {
             state: None,
             config,
+            start_instant: Instant::now(),
         }
+    }
+
+    fn uptime(&self) -> Duration {
+        self.start_instant.elapsed()
     }
 }
 
@@ -85,6 +93,25 @@ impl ApplicationHandler for App {
                 state.window().request_redraw();
                 state.update();
                 state.render();
+            },
+            WindowEvent::KeyboardInput {
+                event: KeyEvent {
+                    state: ElementState::Pressed,
+                    physical_key: PhysicalKey::Code(keycode),
+                    ..
+                },
+                ..
+            } => {
+                match keycode {
+                    KeyCode::Escape => {
+                        log::info!("Close requested by escape key. Exiting now...");
+                        event_loop.exit();
+                    },
+                    KeyCode::KeyT => {
+                        log::info!("Time since startup: {:?}", self.uptime());
+                    },
+                    _ => (),
+                }
             },
             _ => (),
         }

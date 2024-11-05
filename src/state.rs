@@ -28,8 +28,10 @@ impl State {
             force_fallback_adapter: false,
             compatible_surface: Some(&surface),
         }).block_on().unwrap();
-        let (device, queue) = adapter.request_device(&wgpu::DeviceDescriptor::default(), None)
-            .block_on().unwrap();
+        let (device, queue) = adapter.request_device(
+            &wgpu::DeviceDescriptor::default(),
+            None,
+        ).block_on().unwrap();
         let size = window.inner_size();
         let surface_caps = surface.get_capabilities(&adapter);
         let surface_format = surface_caps.formats.iter().find(|f| f.is_srgb())
